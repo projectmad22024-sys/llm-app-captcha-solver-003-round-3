@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Captcha Solver Test</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; }
+#result { margin-top: 20px; }
+img { max-width: 300px; display: block; margin-top: 10px; }
+</style>
+</head>
+<body>
+<h1>Captcha Solver Test</h1>
+<form id="captchaForm">
+  <label for="urlInput">Enter image URL:</label>
+  <input type="text" id="urlInput" name="url" placeholder="https://..." style="width: 60%;" required />
+  <button type="submit">Solve</button>
+</form>
+<div id="result">
+  <div id="message"></div>
+  <img id="captchaImage" src="" alt="Captcha Image" style="display:none;" />
+  <div id="solution" style="margin-top:10px; font-weight: bold;"></div>
+</div>
+<script>
+const form = document.getElementById('captchaForm');
+const messageDiv = document.getElementById('message');
+const captchaImage = document.getElementById('captchaImage');
+const solutionDiv = document.getElementById('solution');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  messageDiv.textContent = '';
+  solutionDiv.textContent = '';
+  const url = document.getElementById('urlInput').value;
+
+  // Show loading message
+  messageDiv.textContent = 'Loading...';
+  captchaImage.style.display = 'none';
+
+  try {
+    const response = await fetch(`/solve?url=${encodeURIComponent(url)}`);
+    if (!response.ok) {
+      throw new Error(`Network response was not ok, status: ${response.status}`);
+    }
+    const data = await response.json();
+    // Check for errors in data
+    if (data.error) {
+      messageDiv.textContent = 'Error: ' + data.error;
+      return;
+    }
+    // Display image
+    captchaImage.src = url;
+    captchaImage.style.display = 'block';
+    // Display solution
+    solutionDiv.textContent = 'Solution: ' + data.solution;
+    messageDiv.textContent = 'Solved successfully';
+  } catch (error) {
+    messageDiv.textContent = 'Error: ' + error.message;
+  }
+});
+</script>
+</body>
+</html>
